@@ -3,8 +3,8 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const ejs = require("ejs")
 const mongoose = require("mongoose")
-const encrypt=require("mongoose-encryption")
-
+// const encrypt=require("mongoose-encryption")
+const md5=require("md5")
 const app = express()
 
 
@@ -27,7 +27,7 @@ const userSchema =new mongoose.Schema({
 })
 
 //Schemas are pluggable, that is, they allow for applying pre-packaged capabilities to extend their functionality
-userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptedFields: ['password']});
+// userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptedFields: ['password']});
 
 const User = mongoose.model("User", userSchema)
 
@@ -44,7 +44,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const newUser = new User({
     email: req.body.username,
-    password: req.body.password
+    password: md5(req.body.password)
   })
   newUser.save((err) => {
     if (err) {
@@ -56,8 +56,7 @@ app.post("/register", (req, res) => {
 })
 app.post("/login", (req, res) => {
   const username = req.body.username
-  const password = req.body.password
-
+  const password = md5(req.body.password)
   User.findOne({
     email: username
   }, (err, foundUser) => {
